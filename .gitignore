@@ -3,3 +3,4 @@ ssl/*
 sites-enabled/*
 !sites-enabled/example.conf.tplm
 !sites-enabled/http_redirect.conf
+!sites-enabled/default.conf
