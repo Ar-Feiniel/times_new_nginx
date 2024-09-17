@@ -1,0 +1,183 @@
+resolver 127.0.0.11 valid=60s ipv6=off;
+resolver_timeout 10s;
+
+#Расширенное описание 
+
+#Универсален
+#Пример конфигурации, оптимизированный для долгоживущих соединений (WebSocket и др.)
+#Для высоконагруженных или специфичных сервисов
+server {
+
+    #ipv4
+    listen 443 ssl;
+
+    #ipv6
+    listen [::]:443 ssl;
+
+    #Определяет имя сервера (доменное имя), для которого эта конфигурация будет применяться.
+    server_name nginx1.example.com;
+    ssl_certificate     /etc/nginx/ssl/live/nginx1.example.com/fullchain.pem;
+    ssl_certificate_key /etc/nginx/ssl/live/nginx1.example.com/privkey.pem;
+
+    #Указывает, какие версии протоколов TLS могут использоваться для установления защищенных соединений.
+    ssl_protocols       TLSv1.2 TLSv1.3;
+
+    Определяет набор шифров (ciphers), которые могут использоваться для установления безопасных соединений.
+    ssl_ciphers         HIGH:!aNULL:!MD5;
+
+    include                 configuration/includes.conf;
+
+    proxy_redirect off;
+    set $proxy_value https://10.10.10.10:10;
+    location / {
+        #Конечный сервер для проксирования запрососов
+        proxy_pass $proxy_value;
+        
+        #Отключает автоматическую замену URL в заголовке Location при ответах от проксируемого сервера.
+        #Обычно proxy_redirect меняет возвращаемые ссылки на правильные URL для клиента.
+        proxy_redirect off;
+        
+        #Устанавливает заголовок Upgrade для проксируемого запроса. Этот заголовок необходим для протоколов вроде WebSocket, которые могут требовать обновления соединения с HTTP до другого протокола (например, WebSocket).
+        proxy_set_header Upgrade $http_upgrade;
+        
+        #Устанавливает заголовок Connection: upgrade, чтобы указать, что соединение должно быть обновлено (например, для WebSocket).
+        proxy_set_header Connection "upgrade";
+        
+        #Отключает буферизацию ответов на стороне Nginx. Обычно Nginx буферизует ответы перед отправкой их клиенту, но при отключении буферизации ответы сразу же передаются клиенту по мере их поступления от проксируемого сервера. Это может быть полезно для долгоживущих соединений (например, WebSocket или серверных событий).
+        proxy_buffering off;
+        
+        #Устанавливает максимальный размер тела запроса, который может быть принят от клиента, в 0, что означает отсутствие ограничения. Это полезно для того, чтобы разрешить отправку больших файлов или данных через прокси.
+        client_max_body_size 0;
+        
+        #Устанавливает максимальное время ожидания для подключения к проксируемому серверу. В данном случае таймаут составляет 3600 секунд (1 час).
+        proxy_connect_timeout  3600s;
+        
+        #Устанавливает максимальное время ожидания для получения ответа от проксируемого сервера.
+        proxy_read_timeout  3600s;
+        
+        #Устанавливает максимальное время, в течение которого Nginx должен передать запрос к проксируемому серверу. Если сервер не может принять данные за это время, соединение разрывается.
+        proxy_send_timeout  3600s;
+        
+        #Устанавливает максимальное время, в течение которого клиент должен получать данные от Nginx. Это время ожидания для отправки ответа клиенту, если клиент слишком долго не принимает данные.
+        send_timeout  3600s;
+    }
+}
+
+#Полезен для логирования в приложениях
+#Конфигурация для сохранения исходных данных клиента
+#Стандартный сценарий
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name nginx2.example.com;
+    ssl_certificate     /etc/nginx/ssl/live/nginx2.example.com/fullchain.pem;
+    ssl_certificate_key /etc/nginx/ssl/live/nginx2.example.com/privkey.pem;
+
+    #Указывает, какие версии протоколов TLS могут использоваться для установления защищенных соединений.
+    ssl_protocols       TLSv1.2 TLSv1.3;
+
+    #ssl_ciphers         HIGH:!aNULL:!MD5;
+    #Обновлен 09.2024
+    ssl_ciphers 'TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256';
+
+    #сервер будет выбирать шифры, которые он считает предпочтительными, а не те, которые предлагает клиент.
+    ssl_prefer_server_ciphers on;
+
+    include                 configuration/includes.conf;
+
+    set $proxy_value http://10.10.10.10:10;
+    location / {
+        proxy_pass $proxy_value;
+        proxy_redirect off;
+
+        #Передает оригинальный заголовок Host от клиента на конечный сервер. Это полезно для случаев, когда серверу важно знать исходное имя хоста, по которому клиент обратился. 
+        proxy_set_header Host $host;
+        
+        #Добавляет заголовок X-Real-IP, передающий фактический IP-адрес клиента, обратившегося к Nginx.
+        proxy_set_header X-Real-IP $remote_addr;
+        
+        #Добавляет или дополняет заголовок X-Forwarded-For, который передает цепочку IP-адресов всех прокси-серверов, через которые прошел запрос, включая реальный IP клиента. Этот заголовок нужен, чтобы конечный сервер мог отслеживать IP-адреса клиентов, которые проходят через несколько прокси.
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        
+        #Передает информацию о протоколе (HTTP или HTTPS), который использовался клиентом при обращении к Nginx. Это полезно, если конечный сервер должен знать, был ли запрос сделан через защищенное соединение.
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        #Обновлен 08.2024
+        #Заголовок заставляет браузеры всегда использовать HTTPS для взаимодействия с сервером, предотвращая атаки типа "downgrade" или "man-in-the-middle".
+        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+
+
+        #Доп. заголовки безопасности(на случай важных переговоров) на уровне клиента
+        
+        #предотвращает встраивание страницы в iframe, что защищает от атак типа "clickjacking".
+        add_header X-Frame-Options DENY;
+
+        #запрещает браузерам догадываться о типе контента, что уменьшает риск атак через подмену MIME-типа.
+        add_header X-Content-Type-Options nosniff;
+
+        #запрещает передачу реферера при переходе на небезопасные страницы.
+        add_header Referrer-Policy no-referrer-when-downgrade;
+
+        #ограничивает выполнение кода только источником self, что защищает от XSS-атак.
+        add_header Content-Security-Policy "default-src 'self';";
+   }
+}
+
+
+#Для копирования:
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    server_name nginx1.example.com;
+    ssl_certificate     /etc/nginx/ssl/live/nginx1.example.com/fullchain.pem;
+    ssl_certificate_key /etc/nginx/ssl/live/nginx1.example.com/privkey.pem;
+    ssl_protocols       TLSv1.2 TLSv1.3;
+    ssl_ciphers         HIGH:!aNULL:!MD5;
+
+    include                 configuration/includes.conf;
+
+    proxy_redirect off;
+    set $proxy_value https://10.10.10.10:10;
+    location / {
+        proxy_pass $proxy_value;
+        proxy_redirect off;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_buffering off;
+        client_max_body_size 0;
+        proxy_connect_timeout  3600s;
+        proxy_read_timeout  3600s;
+        proxy_send_timeout  3600s;
+        send_timeout  3600s;
+    }
+}
+
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name nginx2.example.com;
+    ssl_certificate     /etc/nginx/ssl/live/nginx2.example.com/fullchain.pem;
+    ssl_certificate_key /etc/nginx/ssl/live/nginx2.example.com/privkey.pem;
+
+    ssl_protocols       TLSv1.2 TLSv1.3;
+    ssl_ciphers 'TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256';
+    ssl_prefer_server_ciphers on;
+
+    include                 configuration/includes.conf;
+
+    set $proxy_value http://10.10.10.10:10;
+    location / {
+        proxy_pass $proxy_value;
+        proxy_redirect off;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+        add_header X-Frame-Options DENY;
+        add_header X-Content-Type-Options nosniff;
+        add_header Referrer-Policy no-referrer-when-downgrade;
+        add_header Content-Security-Policy "default-src 'self';";
+   }
+}
