@@ -108,6 +108,7 @@ server {
 
 
         #Доп. заголовки безопасности(на случай важных переговоров) на уровне клиента
+        # !!! Осторожно! Возможен отрыв головы
         
         #предотвращает встраивание страницы в iframe, что защищает от атак типа "clickjacking".
         add_header X-Frame-Options DENY;
@@ -119,6 +120,7 @@ server {
         add_header Referrer-Policy no-referrer-when-downgrade;
 
         #ограничивает выполнение кода только источником self, что защищает от XSS-атак.
+        #использовать крайне опционально
         add_header Content-Security-Policy "default-src 'self';";
    }
 }
