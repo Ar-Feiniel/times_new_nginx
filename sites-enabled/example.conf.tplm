@@ -11,7 +11,7 @@ server {
     ssl_protocols       TLSv1.2 TLSv1.3;
     ssl_ciphers         HIGH:!aNULL:!MD5;
 
-    include                 configuration/includes.conf;
+    include                 configuration/_includes.conf;
 
     proxy_redirect off;
     set $proxy_value https://10.10.10.10:10;
@@ -39,7 +39,7 @@ server {
     ssl_protocols       TLSv1.2 TLSv1.3;
     ssl_ciphers         HIGH:!aNULL:!MD5;
 
-    include                 configuration/includes.conf;
+    include                 configuration/_includes.conf;
 
     set $proxy_value http://10.10.10.10:10;
     location / {

@@ -25,7 +25,7 @@ server {
     Определяет набор шифров (ciphers), которые могут использоваться для установления безопасных соединений.
     ssl_ciphers         HIGH:!aNULL:!MD5;
 
-    include                 configuration/includes.conf;
+    include                 configuration/_includes.conf;
 
     proxy_redirect off;
     set $proxy_value https://10.10.10.10:10;
@@ -85,7 +85,7 @@ server {
     #сервер будет выбирать шифры, которые он считает предпочтительными, а не те, которые предлагает клиент.
     ssl_prefer_server_ciphers on;
 
-    include                 configuration/includes.conf;
+    include                 configuration/_includes.conf;
 
     set $proxy_value http://10.10.10.10:10;
     location / {
@@ -111,6 +111,7 @@ server {
 
         #Доп. заголовки безопасности(на случай важных переговоров) на уровне клиента
         # !!! Использовать для разработки не рекомендую, возможен отвал башки
+        # Доп. описано в security.conf
         
         #предотвращает встраивание страницы в iframe, что защищает от атак типа "clickjacking".
         add_header X-Frame-Options DENY;
@@ -139,7 +140,7 @@ server {
     ssl_protocols       TLSv1.2 TLSv1.3;
     ssl_ciphers         HIGH:!aNULL:!MD5;
 
-    include                 configuration/includes.conf;
+    include                 configuration/_includes.conf;
 
     proxy_redirect off;
     set $proxy_value https://10.10.10.10:10;
@@ -168,7 +169,7 @@ server {
     ssl_ciphers 'TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256';
     ssl_prefer_server_ciphers on;
 
-    include                 configuration/includes.conf;
+    include                 configuration/_includes.conf;
 
     set $proxy_value http://10.10.10.10:10;
     location / {
