@@ -67,8 +67,10 @@ server {
 #Конфигурация для сохранения исходных данных клиента
 #Стандартный сценарий
 server {
-    listen 443 ssl http2;
-    listen [::]:443 ssl http2;
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    
     server_name nginx2.example.com;
     ssl_certificate     /etc/nginx/ssl/live/nginx2.example.com/fullchain.pem;
     ssl_certificate_key /etc/nginx/ssl/live/nginx2.example.com/privkey.pem;
@@ -78,7 +80,7 @@ server {
 
     #ssl_ciphers         HIGH:!aNULL:!MD5;
     #Обновлен 09.2024
-    ssl_ciphers 'TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256';
+    ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!3DES:!MD5:!PSK;
 
     #сервер будет выбирать шифры, которые он считает предпочтительными, а не те, которые предлагает клиент.
     ssl_prefer_server_ciphers on;
