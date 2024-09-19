@@ -1,7 +1,7 @@
 logs/*
 ssl/*
 sites-enabled/*
-!sites-enabled/example.conf.tplm
+!sites-enabled/reverse.conf.tplm
 !sites-enabled/http_redirect.conf
 !sites-enabled/default.conf
-!sites-enabled/example.conf.tplm.expanded
+!sites-enabled/reverse.conf.tplm.expanded
