@@ -5,3 +5,4 @@ sites-enabled/*
 !sites-enabled/http_redirect.conf
 !sites-enabled/default.conf
 !sites-enabled/reverse.conf.tplm.expanded
+!sites-enabled/upstreams.conf
