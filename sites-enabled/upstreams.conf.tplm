@@ -1,0 +1,73 @@
+# Использовать вместе с конфигурациями обратного прокси
+
+#Round Robin - запросы чередуются между серверами
+    upstream rr_backend {
+        server 127.0.0.1:8080 weight=5 max_fails=3 fail_timeout=60s;
+        server 10.9.0.9:80 weight=2 max_fails=3 fail_timeout=60s;
+        server google.com weight=3 max_fails=3 fail_timeout=60s;
+        server ya.ru backup;
+        keepalive 8;
+        #server [hostname, ip] [вес сервера] [максимальное кол-во неудачных подключений] [описано ниже]
+        #Weight. Чем больше вес, тем больше трафика будет направлено серверу
+        #fail_timeout. время, в течение которого должно произойти количество неудачных попыток(max_fails), чтобы сервер был помечен как недоступный
+        #keepalive. максимальное количество открытых подключений к серверам в группе
+    }
+
+#Least Connections - запросы направятся к серверу с наименьшим числом подключений
+    upstream lc_backend {
+        least_conn;
+        server 127.0.0.1:8080;
+        server 10.9.0.9:80;
+        server google.com;
+        server ya.ru backup;
+        keepalive 8;
+    }
+
+#IP Hash - запросы одного ip клиента всегда направляются на один сервер
+    upstream hi_backend {
+        ip_hash;
+        server backend1.example.com;
+        server backend2.example.com;
+        server backend3.example.com;
+    }
+
+#!!! Сторонний модуль ngx_http_upstream_hash_module
+#URL Hash - запросы одного url клиента всегда направляются на один сервер
+    upstream hu_backend {
+        hash $request_uri consistent;  # Хешируем по URI запроса
+        server backend1.example.com;
+        server backend2.example.com;
+        server backend3.example.com;
+    }
+
+#!!! Сторонний модуль nginx-sticky-module
+#Sticky Sessions - привязка сессий
+    upstream ss_backend {
+        sticky;
+        server backend1.example.com;
+        server backend2.example.com;
+        server backend3.example.com;
+    }
+
+#пример блока server Sticky Sessions без модулей
+    http {
+        upstream backend {
+            server backend1.example.com;
+            server backend2.example.com;
+            server backend3.example.com;
+        }
+
+        server {
+            listen 80;
+
+            location / {
+                set $backend "backend";  # Переменная для прокси
+                if ($cookie_route) {
+                    set $backend "backend_$cookie_route";
+                }
+
+                proxy_pass http://$backend;
+                add_header Set-Cookie "route=$backend; Path=/";
+            }
+        }
+    }
