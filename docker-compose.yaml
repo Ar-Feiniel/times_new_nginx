@@ -1,9 +1,8 @@
 services:
   reverse:
-    image: nginx:stable-alpine
-    container_name: reverse
-    hostname: reverse
-    restart: always
+    extends:
+      file: compose_extends/docker-compose.base.yaml
+      service: reverse
     extra_hosts:
       - "host.docker.internal=host-gateway"
     volumes:
@@ -15,11 +14,11 @@ services:
       - "./resources:/var/www/html/resources:ro"
       - "./ssl:/etc/nginx/ssl:ro"
       - "./logs:/var/log/nginx/"
-    networks:
-      services: {}
     ports:
       - 80:80
       - 443:443
+    networks:
+      - services
 
 networks:
   services:
