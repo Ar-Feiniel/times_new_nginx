@@ -1,0 +1,42 @@
+# Для доставки сертификати в /etc/nginx/ssl/ использовать volume
+#ARGS: SERVER_NAMES, CERT_FILE, CERT_KEY_FILE, CONT_IMG_VER
+
+FROM nginx:stable-alpine
+
+#http to https redirect
+COPY sites-enabled/http_redirect.conf /etc/nginx/sites-enabled/
+
+#site config
+COPY docker_image_configs/static.conf.tmpl /etc/nginx/sites-enabled/static.conf
+
+#set server name if arg not empty
+ARG SERVER_NAMES
+RUN if [ ! -z ${SERVER_NAMES} ]; then \
+        sed -i "s/server_name _;/server_name $SERVER_NAMES;/g" /etc/nginx/sites-enabled/static.conf ;\
+    fi
+
+#set certificate file name if arg not empty
+ARG CERT_FILE
+RUN if [ ! -z ${CERT_FILE} ]; then \
+        sed -i "s/ssl_certificate     \/etc\/nginx\/ssl\/cert.pem;/ssl_certificate     \/etc\/nginx\/ssl\/$CERT_FILE;/g" /etc/nginx/sites-enabled/static.conf ;\
+    fi
+
+#set certificate key file name if arg not empty
+ARG CERT_KEY_FILE
+RUN if [ ! -z ${CERT_KEY_FILE} ]; then \
+        sed -i "s/ssl_certificate_key \/etc\/nginx\/ssl\/key.pem;/ssl_certificate_key \/etc\/nginx\/ssl\/$CERT_KEY_FILE;/g" /etc/nginx/sites-enabled/static.conf ;\
+    fi
+
+#set container image version if arg not empty else 1.0.0
+ARG CONT_IMG_VER
+ENV CONT_IMG_VER=${CONT_IMG_VER:-v1.0.0}
+
+#copy project files
+COPY ./project /var/www/html/
+
+CMD ["nginx", "-g", "daemon off;"]
+
+#build string example
+#docker build -f Dockerfiles/Dockerfile_staticsite -t static_site --no-cache --build-arg SERVER_NAMES=softsols.ru .
+#check server_name in image
+#docker run --rm -it -p 8084:443 -p 8083:80 static_site sh -c "cat /etc/nginx/sites-enabled/static.conf"

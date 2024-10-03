@@ -1,6 +1,7 @@
 logs/*
 ssl/*
 sites-enabled/*
+project/*
 !sites-enabled/reverse.conf.tmpl
 !sites-enabled/http_redirect.conf
 !sites-enabled/default.conf
