@@ -1,3 +1,7 @@
+include:
+  - path:
+      - compose_extends/network.include.yaml
+
 services:
   reverse:
     extends:
@@ -19,9 +23,3 @@ services:
       - 443:443
     networks:
       - services
-
-networks:
-  services:
-    external: true
-    driver: bridge
-    name: services
