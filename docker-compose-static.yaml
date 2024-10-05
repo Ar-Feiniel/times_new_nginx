@@ -1,0 +1,22 @@
+name: nginx_static
+include:
+  - path:
+      - compose_extends/network.include.yaml
+
+services:
+  static_site:
+    extends:
+      file: compose_extends/docker-compose.base.yaml
+      service: reverse
+    build:
+      context: .
+      dockerfile: Dockerfiles/Dockerfile_staticsite
+      args:
+        CONT_IMG_VER: "v1.0.0"
+    volumes:
+      - "./ssl:/etc/nginx/ssl:ro"
+    ports:
+      - 80:80
+      - 443:443
+    networks:
+      - services
