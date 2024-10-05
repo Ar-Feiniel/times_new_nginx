@@ -1,0 +1,12 @@
+FROM nginx:stable-alpine
+COPY --chmod=0440 ["./locations", "/etc/nginx/locations"]
+COPY --chmod=0440 ["./configuration", "/etc/nginx/configuration"]
+COPY --chmod=0440 ["./error-pages", "/etc/nginx/error-pages"]
+COPY --chmod=0440 ["./resources", "/var/www/html/resources"]
+COPY --chmod=0440 ["./resources", "/var/www/html/resources"]
+COPY --chmod=0440 ["./nginx_configs/nginx.conf", "/etc/nginx/nginx.conf"]
+
+ARG CONT_IMG_VER
+ENV CONT_IMG_VER=${CONT_IMG_VER:-v1.0.0}
+
+CMD ["nginx", "-g", "daemon off;"]

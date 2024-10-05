@@ -2,17 +2,16 @@
 #ARGS: SERVER_NAMES, CERT_FILE, CERT_KEY_FILE, CONT_IMG_VER
 
 FROM nginx:stable-alpine
+USER nginx
+EXPOSE 80 443
 
-#http to https redirect
-COPY sites-enabled/http_redirect.conf /etc/nginx/sites-enabled/
-
-#site config
-COPY docker_image_configs/static.conf.tmpl /etc/nginx/sites-enabled/static.conf
+#static site + http to https redirect server
+COPY ./nginx_configs/nginx_static.conf /etc/nginx/nginx.conf
 
 #set server name if arg not empty
 ARG SERVER_NAMES
 RUN if [ ! -z ${SERVER_NAMES} ]; then \
-        sed -i "s/server_name _;/server_name $SERVER_NAMES;/g" /etc/nginx/sites-enabled/static.conf ;\
+        sed -i "s/server_name _;/server_name $SERVER_NAMES;/g" /etc/nginx/nginx.conf ;\
     fi
 
 #set certificate file name if arg not empty
