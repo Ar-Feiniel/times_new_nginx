@@ -1,4 +1,4 @@
-name: reverse_default
+name: reverse_dev
 include:
   - path:
       - compose_extends/network.include.yaml
@@ -8,25 +8,31 @@ services:
     extends:
       file: compose_extends/docker-compose.base.yaml
       service: reverse
+    build:
+      context: .
+      dockerfile: Dockerfiles/Dockerfile_devserver
+      args:
+        CONT_IMG_VER: "v1.0.0"
+    pull_policy: missing
     volumes:
-      - "./locations:/etc/nginx/locations:ro"
-      - "./configuration:/etc/nginx/configuration:ro"
       - "./sites-enabled:/etc/nginx/sites-enabled:ro"
-      - "./error-pages:/etc/nginx/error-pages:ro"
-      - "./resources:/var/www/html/resources:ro"
-      - "./ssl:/etc/nginx/ssl:ro"
-      - "./logs:/var/log/nginx/"
     ports:
       - 80:80
       - 443:443
     networks:
       - services
-    configs:
-      - source: nginx_config
-        target: /etc/nginx/nginx.conf
+    secrets:
+      - source: softsols_cert
+        target: /etc/nginx/ssl/live/softsols.ru/fullchain.pem
+      - source: softsols_key
+        target: /etc/nginx/ssl/live/softsols.ru/privkey.pem
 
-configs:
-  nginx_config:
-    name: times_new_nginx_config
-    file: ./nginx_config/nginx.conf
+secrets:
+  softsols_cert:
+    name: softsols_cert
+    file: ./ssl/live/softsols.ru/fullchain.pem
+    external: false
+  softsols_key:
+    name: softsols_key
+    file: ./ssl/live/softsols.ru/privkey.pem
     external: false

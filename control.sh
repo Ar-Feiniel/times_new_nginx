@@ -4,6 +4,9 @@
 #exec 1>out.log
 #exec 2>logs/error.log
 
+compose_file="docker-compose.yaml"
+merge_file="docker-compose.limits.yaml"
+
 root_folder=`pwd`
 
 menu="
@@ -25,11 +28,11 @@ do
     fi
 
     case "$input" in
-    1) docker compose -f docker-compose-devserver.yaml -f docker-compose.limits.yaml up -d;break ;;
-    2) docker compose -f docker-compose-devserver.yaml -f docker-compose.limits.yaml down && \
-        docker compose -f docker-compose-devserver.yaml -f docker-compose.limits.yaml up -d;break ;;
-    3) docker compose -f docker-compose-devserver.yaml -f docker-compose.limits.yaml down;break ;;
-    4) docker compose -f docker-compose-devserver.yaml -f docker-compose.limits.yaml ps;break ;;
+    1) docker compose -f $compose_file -f $merge_file up -d;break ;;
+    2) docker compose -f $compose_file -f $merge_file down && \
+        docker compose -f $compose_file -f $merge_file up -d;break ;;
+    3) docker compose -f $compose_file -f $merge_file down;break ;;
+    4) docker compose -f $compose_file -f $merge_file ps;break ;;
     *) echo "key not found"
     esac
 done
