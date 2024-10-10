@@ -1,10 +1,8 @@
 logs/*
 ssl/*
 sites-enabled/*
-project/*
-!sites-enabled/reverse.conf.tmpl
+!sites-enabled/reverse.conf.tplm
 !sites-enabled/http_redirect.conf
 !sites-enabled/default.conf
-!sites-enabled/reverse.conf.tmpl.expanded
-!sites-enabled/upstreams.conf.tmpl
-!sites-enabled/static.conf.tmpl
+!sites-enabled/reverse.conf.tplm.expanded
+!sites-enabled/upstreams.conf

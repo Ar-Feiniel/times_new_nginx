@@ -1,5 +1,0 @@
-networks:
-  services:
-    external: true
-    driver: bridge
-    name: services

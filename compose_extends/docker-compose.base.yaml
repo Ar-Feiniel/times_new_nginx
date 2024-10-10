@@ -1,8 +1,0 @@
-services:
-  reverse:
-    image: nginx:stable-alpine
-    container_name: reverse
-    hostname: reverse
-    restart: always
-    extra_hosts:
-      - "host.docker.internal=host-gateway"

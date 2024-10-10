@@ -1,5 +1,0 @@
-services:
-  reverse:
-    cpu_count: 2
-    mem_limit: 256m
-    mem_reservation: 256m
